@@ -1,0 +1,113 @@
+<html>
+    <head>
+        <meta charset="UTF-8"/>
+        <meta name="viewport" content="width=device-width, initial-scale=1"/>
+        <style>
+            body{
+                margin: 0;
+                overflow: hidden;
+            }
+        </style>
+        <script type="importmap">
+            {
+                "imports":{
+                    "three": "https://unpkg.com/three@0.152.2/build/three.module.js",
+                    "three/addons/": "https://unpkg.com/three@0.152.2/examples/jsm/"
+                }
+            }
+        </script>
+        <script type="module">
+            import * as THREE from "three";
+            import { OrbitControls } from "three/addons/controls/OrbitControls.js";
+
+            //ここに内容の記述をする1
+            const canvasElement = document.querySelector("#myCanvas");
+
+            //レンダラーの作成
+            const renderer = new THREE.WebGLRenderer({
+                canvas: canvasElement,
+            });
+
+            //シーンの作成
+            const scene = new THREE.Scene();
+
+            //カメラの作成
+            const camera = new THREE.PerspectiveCamera(45,1);
+            camera.position.set(0,0,1000);
+            //カメラコントローラー
+            const controls = new OrbitControls(camera,canvasElement);
+            controls.enableDamping = true;
+            controls.dampingFactor = 0.2;
+
+            //多量のパーティクルの作成2
+            const SIZE = 3000;
+            const LENGTH = 1000;
+
+            const vertices = [];
+            for(let i = 0;i < LENGTH;i++){
+                const x = SIZE * (Math.random() - 0.5);
+                const y = SIZE * (Math.random() - 0.5);
+                const z = SIZE * (Math.random() - 0.5);
+
+                vertices.push(x,y,z);
+            }
+
+            const geometry = new THREE.BufferGeometry();
+            geometry.setAttribute('position',new THREE.Float32BufferAttribute(vertices,3));
+
+            const material = new THREE.PointsMaterial({
+                size: 5,
+                color: 0xffffff,
+            });
+
+            const mesh1 = new THREE.Points(geometry,material);
+            scene.add(mesh1);
+            //2
+
+            //マグマ玉の作成3
+            const loader = new THREE.TextureLoader();
+            const map = loader.load("magma.png");
+
+            const mesh2 = new THREE.Mesh(
+                new THREE.SphereGeometry(100,20,20),
+                new THREE.MeshBasicMaterial({map})
+            );
+            mesh2.position.set;
+
+            map.wrapS = map.wrapT = THREE.RepeatWrapping;
+
+            scene.add(mesh2);
+            //3
+
+            tick();
+
+            function tick(){
+                //3
+                map.offset.x = performance.now() / 1000 / 2;
+                map.offset.y = performance.now() / 1000 / 2.5;
+                //3
+                controls.update();
+                renderer.render(scene,camera);
+                requestAnimationFrame(tick);
+            }
+            //1
+
+            onResize();
+            window.addEventListener("resize",onResize);
+
+            function onResize(){
+                const width = window.innerWidth;
+                const height = window.innerHeight;
+
+                renderer.setPixelRatio(window.devicePixelRatio);
+                renderer.setSize(width,height);
+
+                camera.aspect = width / height;
+                camera.updateProjectionMatrix();
+            }
+        </script>
+    </head>
+    <body>
+        <canvas id ="myCanvas"></canvas>
+    </body>
+</html>
