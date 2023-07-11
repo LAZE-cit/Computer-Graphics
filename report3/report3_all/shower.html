@@ -1,0 +1,107 @@
+<html>
+    <head>
+        <meta charset="UTF-8"/>
+        <meta name="viewport" content="width=device-width, initial-scale=1"/>
+        <style>
+            body{
+                margin: 0;
+                overflow: hidden;
+            }
+        </style>
+        <script type="importmap">
+            {
+                "imports":{
+                    "three": "https://unpkg.com/three@0.152.2/build/three.module.js",
+                    "three/addons/": "https://unpkg.com/three@0.152.2/examples/jsm/"
+                }
+            }
+        </script>
+        <script type="module">
+            import * as THREE from "three";
+            import { OrbitControls } from "three/addons/controls/OrbitControls.js";
+
+            //ここに内容の記述をする
+            const canvasElement = document.querySelector("#myCanvas");
+
+            //レンダラーの作成
+            const renderer = new THREE.WebGLRenderer({
+                canvas: canvasElement,
+            });
+            renderer.setClearColor(0x0000ff);
+
+            //シーンの作成
+            const scene = new THREE.Scene();
+
+            //カメラの作成
+            const camera = new THREE.PerspectiveCamera(45,1);
+            camera.position.set(1500,1500,1500);
+            camera.lookAt(450,450,450);
+            //カメラコントローラー
+            const controls = new OrbitControls(camera,canvasElement);
+            controls.enableDamping = true;
+            controls.dampingFactor = 0.2;
+
+            //
+            //顔の作成
+            const face = [1000];
+            let i = 0;
+            let x,y,z;
+            for(x = 0;x<10;x++){
+                for(y = 0;y<10;y++){
+                    for(z = 0;z<10;z++){
+                        const geometry = new THREE.SphereGeometry(30,30,30);
+                        const loader = new THREE.TextureLoader();
+                        const texture = loader.load('face.png');
+                        const material = new THREE.MeshStandardMaterial({
+                            map: texture
+                        });
+                        face[i] = new THREE.Mesh(geometry,material);
+                        face[i].position.x = x * 100;
+                        face[i].position.y = y * 100;
+                        face[i].position.z = z * 100;
+                        scene.add(face[i]);
+                        i++;
+                    }
+                }
+            }
+            //
+
+            //ライトの作成
+            const light = new THREE.AmbientLight(0xffffff,1);
+            scene.add(light);
+            //
+
+            tick();
+
+            function tick(){
+                for(let i = 0;i<1000;i++){
+                    if(i % 3 == 0)      face[i].rotation.x += 0.1;
+                    else if(i % 3 == 1) face[i].rotation.y += 0.1;
+                    else                face[i].rotation.z += 0.1;
+                }
+
+                controls.update();
+                renderer.render(scene,camera);
+                requestAnimationFrame(tick);
+            }
+            //
+
+            onResize();
+            window.addEventListener("resize",onResize);
+
+            function onResize(){
+                const width = window.innerWidth;
+                const height = window.innerHeight;
+
+                renderer.setPixelRatio(window.devicePixelRatio);
+                renderer.setSize(width,height);
+
+                camera.aspect = width / height;
+                camera.updateProjectionMatrix();
+            }
+        </script>
+    </head>
+    <body>
+        <canvas id ="myCanvas"></canvas>
+    </body>
+</html>
