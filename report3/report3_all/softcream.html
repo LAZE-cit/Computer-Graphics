@@ -1,0 +1,154 @@
+<html>
+    <head>
+        <meta charset="UTF-8"/>
+        <meta name="viewport" content="width=device-width, initial-scale=1"/>
+        <style>
+            body{
+                margin: 0;
+                overflow: hidden;
+            }
+        </style>
+        <script type="importmap">
+            {
+                "imports":{
+                    "three": "https://unpkg.com/three@0.152.2/build/three.module.js",
+                    "three/addons/": "https://unpkg.com/three@0.152.2/examples/jsm/"
+                }
+            }
+        </script>
+        <script type="module">
+            import * as THREE from "three";
+            import { OrbitControls } from "three/addons/controls/OrbitControls.js";
+
+            //ここに内容の記述をする
+            const canvasElement = document.querySelector("#myCanvas");
+
+            //レンダラーの作成
+            const renderer = new THREE.WebGLRenderer({
+                canvas: canvasElement,
+            });
+
+            //シーンの作成
+            const scene = new THREE.Scene();
+
+            //カメラの作成
+            const camera = new THREE.PerspectiveCamera(45,1);
+            camera.position.set(1000,1000,1000);
+            //カメラコントローラー
+            const controls = new OrbitControls(camera,canvasElement);
+            controls.enableDamping = true;
+            controls.dampingFactor = 0.2;
+
+            //ライト作成
+            const AmbientLight = new THREE.AmbientLight(0xffffff,1);
+            scene.add(AmbientLight);
+
+            //
+            //コーンの部分の作成
+            const loader = new THREE.TextureLoader();
+            const texture = loader.load('cone.png');
+            const geometry1 = new THREE.ConeGeometry(40,175,32);
+            const material1 = new THREE.MeshStandardMaterial({
+                map: texture
+            });
+            const cone = new THREE.Mesh(geometry1,material1);
+            cone.rotation.x = Math.PI;
+            scene.add(cone);
+            //
+
+            //アイスの部分の作成
+            const geometry3 = new THREE.TorusGeometry(40,20,16,100);
+            const geometry4 = new THREE.TorusGeometry(30,20,16,100);
+            const geometry5 = new THREE.TorusGeometry(20,20,16,100);
+            const geometry6 = new THREE.ConeGeometry(30,30,32);
+
+            const material3 = new THREE.MeshBasicMaterial({color:0xffffff});
+
+            const torus1 = new THREE.Mesh(geometry3,material3);
+            const torus2 = new THREE.Mesh(geometry4,material3);
+            const torus3 = new THREE.Mesh(geometry5,material3);
+            const aisu = new THREE.Mesh(geometry6,material3);
+
+            torus1.rotation.x = Math.PI/2;
+            torus2.rotation.x = Math.PI/2;
+            torus3.rotation.x = Math.PI/2;
+            
+            torus1.position.y = 100;
+            torus2.position.y = 125;
+            torus3.position.y = 150;
+            aisu.position.y = 175;
+            
+            const aisu_g = new THREE.Group();
+            aisu_g.add(torus1);
+            aisu_g.add(torus2);
+            aisu_g.add(torus3);
+            aisu_g.add(aisu);
+            aisu_g.add(cone);
+
+            aisu_g.position.y = -10;
+
+            scene.add(aisu_g);
+            //
+
+            //チバニーの作成
+            const texture2 = loader.load('chibani.png');
+            const material4 = new THREE.SpriteMaterial({map:texture2});
+            const sprite1 = new THREE.Sprite(material4);
+            sprite1.scale.set(100,200,200);
+            sprite1.position.set(100,50,100);
+            scene.add(sprite1);
+            //
+
+            //多量のパーティクルの作成
+            const SIZE = 2000;
+            const LENGTH = 400;
+
+            const vertices = [];
+            for(let i = 0;i < LENGTH;i++){
+                let y = SIZE * (Math.random() - 0.5);
+                let x = SIZE * (Math.random() - 0.5);
+                let z = SIZE * (Math.random() - 0.5);
+
+                vertices.push(x,y,z);
+            }
+
+            const geometry2 = new THREE.BufferGeometry();
+            geometry2.setAttribute('position',new THREE.Float32BufferAttribute(vertices,3));
+
+            var color = "0x" + Math.floor(Math.random() * 16777215).toString(16);
+            const material2 = new THREE.PointsMaterial({
+                size: 7,
+                color: Number(color),
+            });
+
+            const mesh1 = new THREE.Points(geometry2,material2);
+            scene.add(mesh1);
+            //
+            tick();
+
+            function tick(){
+                controls.update();
+                renderer.render(scene,camera);
+                requestAnimationFrame(tick);
+            }
+            //
+
+            onResize();
+            window.addEventListener("resize",onResize);
+
+            function onResize(){
+                const width = window.innerWidth;
+                const height = window.innerHeight;
+
+                renderer.setPixelRatio(window.devicePixelRatio);
+                renderer.setSize(width,height);
+
+                camera.aspect = width / height;
+                camera.updateProjectionMatrix();
+            }
+        </script>
+    </head>
+    <body>
+        <canvas id ="myCanvas"></canvas>
+    </body>
+</html>
