@@ -1,0 +1,122 @@
+<html>
+    <head>
+        <meta charset="UTF-8"/>
+        <meta name="viewport" content="width=device-width, initial-scale=1"/>
+        <style>
+            body{
+                margin: 0;
+                overflow: hidden;
+            }
+        </style>
+        <script type="importmap">
+            {
+                "imports":{
+                    "three": "https://unpkg.com/three@0.152.2/build/three.module.js",
+                    "three/addons/": "https://unpkg.com/three@0.152.2/examples/jsm/"
+                }
+            }
+        </script>
+        <script type="module">
+            import * as THREE from "three";
+            import { OrbitControls } from "three/addons/controls/OrbitControls.js";
+
+            //ここに内容の記述をする
+            const canvasElement = document.querySelector("#myCanvas");
+
+            //レンダラーの作成
+            const renderer = new THREE.WebGLRenderer({
+                canvas: canvasElement,
+            });
+
+            //シーンの作成
+            const scene = new THREE.Scene();
+
+            //カメラの作成
+            const camera = new THREE.PerspectiveCamera(45,1);
+            camera.position.set(200,0,200);
+            //カメラコントローラー
+            const controls = new OrbitControls(camera,canvasElement);
+            controls.enableDamping = true;
+            controls.dampingFactor = 0.2;
+
+            //ライト作成
+            const AmbientLight = new THREE.AmbientLight(0xffffff,1);
+            scene.add(AmbientLight);
+            //
+
+            //確率変数
+            let atari = Math.floor(Math.random() * 2077);
+
+            //当たりくじの作成
+            if(atari<10){
+                const loader = new THREE.TextureLoader();
+                const texture = loader.load('kitai.png');
+                const material = new THREE.SpriteMaterial({map:texture});
+                const sprite = new THREE.Sprite(material);
+                sprite.scale.set(100,200,200);
+                scene.add(sprite);
+            }
+            //はずれくじの作成
+            if(atari>=10){
+                const loader2 = new THREE.TextureLoader();
+                const texture2 = loader2.load('hazure.png');
+                const material2 = new THREE.SpriteMaterial({map:texture2});
+                const sprite2 = new THREE.Sprite(material2);
+                sprite2.scale.set(300,200,200);
+                scene.add(sprite2);
+            }
+
+            //多量のパーティクルの作成
+            const SIZE = 2000;
+            const LENGTH = 400;
+
+            const vertices = [];
+            for(let i = 0;i < LENGTH;i++){
+                let y = SIZE * (Math.random() - 0.5);
+                let x = SIZE * (Math.random() - 0.5);
+                let z = SIZE * (Math.random() - 0.5);
+
+                vertices.push(x,y,z);
+            }
+
+            const geometry2 = new THREE.BufferGeometry();
+            geometry2.setAttribute('position',new THREE.Float32BufferAttribute(vertices,3));
+
+            var color = "0x" + Math.floor(Math.random() * 16777215).toString(16);
+            const material2 = new THREE.PointsMaterial({
+                size: 7,
+                color: Number(color),
+            });
+
+            const mesh1 = new THREE.Points(geometry2,material2);
+            scene.add(mesh1);
+            //
+
+            tick();
+
+            function tick(){
+                controls.update();
+                renderer.render(scene,camera);
+                requestAnimationFrame(tick);
+            }
+            //
+
+            onResize();
+            window.addEventListener("resize",onResize);
+
+            function onResize(){
+                const width = window.innerWidth;
+                const height = window.innerHeight;
+
+                renderer.setPixelRatio(window.devicePixelRatio);
+                renderer.setSize(width,height);
+
+                camera.aspect = width / height;
+                camera.updateProjectionMatrix();
+            }
+        </script>
+    </head>
+    <body>
+        <canvas id ="myCanvas"></canvas>
+    </body>
+</html>
